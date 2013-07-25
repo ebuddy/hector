@@ -18,6 +18,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Deletion;
 import org.apache.cassandra.thrift.SlicePredicate;
+import org.apache.cassandra.thrift.SliceRange;
 
 
 
@@ -92,6 +93,18 @@ public final class MutatorImpl<K> implements Mutator<K> {
     return execute();
   }
 
+  @Override
+  public <N> MutationResult delete(K key, String cf, N start, N finish, Serializer<N> nameSerializer) {
+    SlicePredicate sp = new SlicePredicate();
+    SliceRange sliceRange = new SliceRange();
+    sliceRange.setStart(nameSerializer.toByteBuffer(start));
+    sliceRange.setFinish(nameSerializer.toByteBuffer(finish));
+    sliceRange.setCount(Integer.MAX_VALUE);
+    sp.setSlice_range(sliceRange);
+    Deletion d = new Deletion().setTimestamp(keyspace.createClock()).setPredicate(sp);
+    getPendingMutations().addDeletion(key, Arrays.asList(cf), d);
+    return execute();
+  }
 
 /**
  * Deletes a subcolumn of a supercolumn

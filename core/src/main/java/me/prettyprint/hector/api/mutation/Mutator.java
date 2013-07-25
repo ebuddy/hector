@@ -32,6 +32,9 @@ public interface Mutator<K> {
   <N> MutationResult delete(final K key, final String cf, final N columnName,
       final Serializer<N> nameSerializer, long clock);
 
+  <N> MutationResult delete(final K key, final String cf, final N start, final N finish,
+      final Serializer<N> nameSerializer);
+
   /**
    * Deletes a subcolumn of a supercolumn
    * @param <SN> super column type
